@@ -24,13 +24,35 @@ instacart %>%
 
 There are 134 different aisles in the dataset, with over 150,000 items ordered from both the fresh vegetables and fresh fruits aisles. The next most ordered from aisle is the packaged vegetables fruits aisle with almost 78,500 items being ordered from it.
 
+
+Now, here's a plot showing the number of items ordered in each aisle, with only aisles with over 10,000 items included.
+
 ```{r}
 instacart %>% 
   group_by(aisle) %>% 
   summarize(n_obs = n()) %>% 
-  arrange(desc(n_obs)) %>% 
   filter(n_obs > 10000) %>% 
   ggplot(aes(y = aisle, x = n_obs)) + 
   geom_point()
+```
+
+Next, we'll look at the top 3 most popular items from the aisles "baking ingredients", "dog food care", and "packaged vegetables fruits".
+
+```{r}
+instacart %>% 
+  filter(aisle == c("baking ingredients",
+                    "dog food care",
+                    "packaged vegetables fruits")) %>% 
+  group_by(aisle, product_name) %>% 
+  summarize(n_obs = n()) %>% 
+  mutate(product_rank = min_rank(desc(n_obs))) %>% 
+  filter(product_rank < 4) %>% 
+  knitr::kable()
+```
+
+Next, let's explore what mean hour of the day Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week, with a column for each day of the week and a row for each of the two items.
+
+```{r}
+
 ```
 
