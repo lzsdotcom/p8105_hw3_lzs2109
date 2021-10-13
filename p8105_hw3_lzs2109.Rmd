@@ -53,6 +53,19 @@ instacart %>%
 Next, let's explore what mean hour of the day Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week, with a column for each day of the week and a row for each of the two items.
 
 ```{r}
+instacart %>% 
+  select(order_hour_of_day, order_dow, product_name) %>% 
+  filter(product_name == "Pink Lady Apples" | product_name == "Coffee Ice Cream") %>% 
+  group_by(product_name, order_dow) %>% 
+  summarize(mean_hour = mean(order_hour_of_day)) %>% 
+  pivot_wider(names_from = order_dow, values_from = mean_hour) %>% 
+  knitr::kable()
+```
 
+
+### **Problem 2**
+
+```{r}
+data("brfss_smart2010")
 ```
 
