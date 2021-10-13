@@ -1,0 +1,122 @@
+---
+title: "Data Science I Homework 2 - lzs2109"
+author: "Louis Sharp"
+date: "10/01/2021"
+output: github_document
+---
+
+### **Problem 1**
+
+```{r, message = FALSE}
+library(tidyverse)
+library(readxl)
+```
+
+```{r}
+mtw_df = read_excel("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", 
+                    sheet = "Mr. Trash Wheel",
+                    range = "A2:N535") %>% 
+  janitor::clean_names() %>% 
+  mutate(sports_balls = as.integer(sports_balls),
+         dumpster = as.numeric(dumpster)) %>% 
+  drop_na(dumpster)
+
+precip18_df = read_excel("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", 
+                    sheet = "2018 Precipitation",
+                    range = "A2:B14") %>% 
+  mutate(year = 2018)
+
+precip19_df = read_excel("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", 
+                    sheet = "2019 Precipitation",
+                    range = "A2:B14") %>% 
+  mutate(year = 2019)
+
+precip_df = bind_rows(precip18_df, precip19_df) %>% 
+  janitor::clean_names() %>% 
+  mutate(month = month.name[month]) %>% 
+  relocate(month, year)
+```
+
+The Mr. Trash Wheel and precipitation data sets both come from the same excel file about Baltimore's Mr. Trash Wheel, a device that collects trash from Jones Falls river as it enters Baltimore's Inner Harbor. The trash is then incinerated to provide power to the Baltimore area. The Trash Wheel data set includes temporal details, info on the mass/volume of trash collected, and type of trash collected by the device per dumpster filled, in addition to estimates of power generated as a result. The variables included in the dataset are `r names(mtw_df)`, and includes info on `r nrow(mtw_df)` different dumpsters filled with trash collected by the device, each denoted by a different row. For example, Mr. Trash Wheel collected a median of `r median(pull(filter(mtw_df, year == 2019), sports_balls))` sports balls in 2019. The precipitation data set includes information about how much rain was measured per month for the years 2018 and 2019. This is important because the Mr. Trash Wheel website indicates that the level of precipitation influences the amount and type of trash the device collects. Variables in the precipitation dataset include `r names(precip_df)`, and there is data for all twelve months in 2018 and 2019 for a total of `r nrow(precip_df)` observations. For example, adding up the monthly rain totals for 2018 shows that there was a total of `r sum(pull(precip18_df, Total))` inches of rain for that year.
+
+
+### **Problem 2**
+
+```{r, message = FALSE}
+pols_df = read_csv("data/fivethirtyeight_datasets/pols-month.csv") %>% 
+  separate(mon, into = c("year", "month", "day")) %>% 
+  mutate(month = as.numeric(month), 
+         month = month.name[month],
+         year = as.numeric(year),
+         president = ifelse(prez_dem == 1, "dem", "gop")) %>% 
+  select(-prez_dem, -prez_gop, -day)
+
+snp_df = read_csv("data/fivethirtyeight_datasets/snp.csv") %>% 
+  separate(date, into = c("month", "day", "year")) %>% 
+  mutate(month = as.numeric(month), 
+         year = as.numeric(year),
+         year = ifelse(year > 40, year + 1900, year + 2000)) %>% 
+  select(-day) %>% 
+  relocate(year, month) %>% 
+  arrange(year, month) %>% 
+  mutate(month = month.name[month])
+
+unemp_df = read_csv("data/fivethirtyeight_datasets/unemployment.csv") %>% 
+  pivot_longer(
+  Jan:Dec,
+  names_to = "month",
+  values_to = "percent_unemployed") %>% 
+  janitor::clean_names() %>% 
+  mutate(month_nums = rep(1:12, length(month)/12), #create column with numbers for months
+         month_nums = month.name[month_nums], #change those numbers to full month names
+         month = month_nums) %>% #replace abbreviated month names with full month names
+  select(-month_nums) #remove the intermediate column
+
+pols_snp_df = left_join(pols_df, snp_df, by = c("year", "month")) 
+#merge pol_df and snap_df by year and month keys
+pols_snp_unemp_df = left_join(pols_snp_df, unemp_df, by = c("year", "month"))
+#merging unemp_df with same keys
+```
+
+These three datasets contain information and data surrounding politics and history in the United States. The pols dataframe contains info on the number of senators, governors, and representatives from `r min(pull(pols_df, year))` to `r max(pull(pols_df, year))` grouped by their political affiliation, republican or democrat. It also included political affiliation of the president until we merged the dem and gop columns into one president column (for which there were two during Aug-Dec 1974 prior to the merged column, presumably when Nixon was impeached and Ford took office). The snp dataframe contains data on the closing numbers of the S&P stock market index for every month between `r min(pull(snp_df, year))` to `r max(pull(snp_df, year))`, as a general measure of the state of the economy during those times. Finally, the unemployment dataframe includes the percentage of unemployment in the U.S. for months between the years `r min(pull(unemp_df, year))` to `r max(pull(unemp_df, year))`. Since these three datasets incorporate which political party held more power during any given month/year, the state of the economy by a general measure, and the percent of unemployed, it seemed interesting to merge them and compare how a political party's power may have affected the economy and unemployment rates. The resulting dataframe incorporates `r nrow(pols_snp_unemp_df)` observations for the variables `r names(pols_snp_unemp_df)` between the years `r min(pull(pols_snp_unemp_df, year))` to `r max(pull(pols_snp_unemp_df, year))`, although as mentioned above, S&P data begins 1950 and thus has `r nrow(snp_df)` observations and unemployment data begins in 1948 and therefore has `r nrow(unemp_df)` observations.
+
+
+### **Problem 3**
+
+```{r}
+bby_names = read_csv("data/Popular_Baby_Names.csv") %>% 
+  janitor::clean_names() %>% 
+  mutate(ethnicity = str_replace_all(ethnicity, c("PACI$" = "PACIFIC ISLANDER",
+                                                  "NON HISP$" = "NON HISPANIC")),
+         childs_first_name = str_to_title(childs_first_name),
+         gender = str_to_title(gender),
+         ethnicity = str_to_title(ethnicity)) %>% 
+  distinct() #maybe recode() would have worked instead of str_replace_all ..?
+
+olivia_popularity = bby_names %>% #since the df is named olivia, didnt include in column title
+  filter(childs_first_name == "Olivia") %>% 
+  select(-childs_first_name, -gender, -count) %>% 
+  pivot_wider(names_from = "year_of_birth", names_prefix = "rank_", values_from = "rank")
+
+popular_male_names = bby_names %>% #same rationale as olivia df for column titles
+  filter(gender == "Male",
+         rank == 1) %>% 
+  select(-gender, -count) %>% 
+  pivot_wider(names_from = "year_of_birth", 
+              values_from = "childs_first_name")
+```
+
+```{r}
+white_males_2016 = bby_names %>% 
+  filter(ethnicity == "White Non Hispanic",
+         gender == "Male",
+         year_of_birth == 2016)
+
+white_males_2016 %>% 
+  ggplot(aes(x = rank, y = count)) + 
+  geom_point() +
+  labs(x = "Rank in Popularity",
+       y = "Number of Children With Name",
+       title = "Male, White Non-Hispanics Born in 2016 ")
+```
+
