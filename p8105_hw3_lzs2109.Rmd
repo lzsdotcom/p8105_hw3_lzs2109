@@ -67,14 +67,19 @@ instacart %>%
 
 ```{r}
 data("brfss_smart2010")
+
 brfss_smart2010 = brfss_smart2010 %>% 
   janitor::clean_names() %>% 
   rename(state = locationabbr,
          county = locationdesc,
          resp_id = respid) %>% 
-  filter(topic == "Overall Health") %>%
-  mutate(response = as.factor(response))
+  filter(topic == "Overall Health") %>% 
+  mutate(response = factor(response, 
+                           ordered = TRUE, 
+                           levels = c("Poor", "Fair", "Good", "Very good", "Excellent")))
 
-is.ordered(pull(brfss_smart2010, response))
+#pull(brfss_smart2010, response) just to check response factors were ordered correctly
 ```
+
+
 
