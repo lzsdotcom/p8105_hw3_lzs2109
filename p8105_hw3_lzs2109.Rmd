@@ -145,8 +145,19 @@ accel_df = read_csv("data/accel_data.csv") %>%
 This tidied accelerometer dataset includes the following variables: `r names(accel_df)` with an observation for every minute of every day over a 5 week period. If you didn't feel like doing the math, that's a total of `r nrow(accel_df)` observations of accelerometer filled fun! But seriously, this dataset is important information because it follows a man in his 60s with a normal range BMI who was diagnosed with congestive heart failure, and thus around-the-clock observations of his activity level were important for health and medical purposes. As such, the dataset is very precise, broken down by a numerical activity level for every minute of every day for the whole 5 week period, with variables identifying what day of the week and whether it was a weekday or weekend for precise analysis.
 
 ```{r}
+accel_df = accel_df %>% 
+  group_by(day_id) %>% 
+  mutate(total_activity = sum(activity_level))
+
 accel_df %>% 
-  group_by(day_id, day, week) %>% 
-  summarize(total_activity = sum(activity_level))
+  group_by(day_id, day, week, total_activity) %>% 
+  summarize() %>% 
+  view()
+```
+
+There aren't any striking trends across the give weeks that really jump out. Mid-week seems to be relatively less busy (Tues-Thurs) throughout the 5 week period, and for the first three weeks, when there's one busy day on the weekend, the other seems relatively less busy. The two Saturdays in weeks 4 and 5, nothing seems to be happening at all, which is probably the most striking feature of this aggregated activity dataset. The highest levels of activity for each week seem to happen between Friday-Monday, with the exception of week 4.
+
+```{r}
+
 ```
 
