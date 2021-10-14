@@ -133,6 +133,20 @@ brfss_smart2010 %>%
 
 ```{r}
 accel_df = read_csv("data/accel_data.csv") %>% 
-  janitor::clean_names()
+  janitor::clean_names() %>% 
+  pivot_longer(activity_1:activity_1440, 
+               names_to = "minute",
+               names_prefix = "activity_",
+               values_to = "activity_level") %>% 
+  mutate(part_of_week = ifelse(day == "Saturday" | day == "Sunday", "weekend", "weekday"),
+  minute = as.numeric(minute))
+```
+
+This tidied accelerometer dataset includes the following variables: `r names(accel_df)` with an observation for every minute of every day over a 5 week period. If you didn't feel like doing the math, that's a total of `r nrow(accel_df)` observations of accelerometer filled fun! But seriously, this dataset is important information because it follows a man in his 60s with a normal range BMI who was diagnosed with congestive heart failure, and thus around-the-clock observations of his activity level were important for health and medical purposes. As such, the dataset is very precise, broken down by a numerical activity level for every minute of every day for the whole 5 week period, with variables identifying what day of the week and whether it was a weekday or weekend for precise analysis.
+
+```{r}
+accel_df %>% 
+  group_by(day_id, day, week) %>% 
+  summarize(total_activity = sum(activity_level))
 ```
 
