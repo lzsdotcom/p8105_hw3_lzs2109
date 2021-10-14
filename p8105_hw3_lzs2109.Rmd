@@ -123,8 +123,16 @@ brfss_smart2010 %>%
   filter(state == "NY",
          year == 2006 | year == 2010) %>% 
   select(year, state, county, response, data_value) %>% 
-  group_by(year, response) %>% 
   ggplot(aes(x = response, y = data_value, color = county)) + 
-  geom_density()
+  geom_boxplot() +
+  facet_grid(. ~ year)
+```
+
+
+### **Problem 3**
+
+```{r}
+accel_df = read_csv("data/accel_data.csv") %>% 
+  janitor::clean_names()
 ```
 
