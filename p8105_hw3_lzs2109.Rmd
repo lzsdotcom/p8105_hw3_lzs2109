@@ -158,6 +158,9 @@ accel_df %>%
 There aren't any striking trends across the give weeks that really jump out. Mid-week seems to be relatively less busy (Tues-Thurs) throughout the 5 week period, and for the first three weeks, when there's one busy day on the weekend, the other seems relatively less busy. The two Saturdays in weeks 4 and 5, nothing seems to be happening at all, which is probably the most striking feature of this aggregated activity dataset. The highest levels of activity for each week seem to happen between Friday-Monday, with the exception of week 4.
 
 ```{r}
-
+accel_df %>% 
+  ggplot(aes(x = day_id, y = total_activity, color = day)) +
+  geom_point() +
+  geom_line()
 ```
 
