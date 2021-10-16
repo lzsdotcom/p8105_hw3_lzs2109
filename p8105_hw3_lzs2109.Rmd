@@ -54,7 +54,7 @@ instacart %>%
   mutate(product_rank = min_rank(desc(times_ordered))) %>% 
   filter(product_rank < 4) %>% 
   arrange(aisle, product_rank) %>% 
-  relocate(product_rank, product_name, times_ordered, aisle) %>% 
+  relocate(product_rank, product_name, aisle, times_ordered) %>% 
   knitr::kable()
 ```
 
@@ -67,7 +67,10 @@ instacart %>%
   group_by(product_name, order_dow) %>% 
   summarize(mean_hour = mean(order_hour_of_day)) %>% 
   mutate(mean_hour = as.integer(mean_hour)) %>% 
-  pivot_wider(names_from = order_dow, values_from = mean_hour) %>% 
+  pivot_wider(
+    names_from = order_dow, 
+    names_prefix = "day_",
+    values_from = mean_hour) %>% 
   knitr::kable()
 ```
 
@@ -162,11 +165,10 @@ accel_df = accel_df %>%
 
 accel_df %>% 
   group_by(day_id, day, week, total_activity) %>% 
-  summarize() %>% 
-  view()
+  summarize()
 ```
 
-There aren't any striking trends across the give weeks that really jump out. Mid-week seems to be relatively less busy (Tues-Thurs) throughout the 5 week period, and for the first three weeks, when there's one busy day on the weekend, the other seems relatively less busy. The two Saturdays in weeks 4 and 5, nothing seems to be happening at all, which is probably the most striking feature of this aggregated activity dataset. The highest levels of activity for each week seem to happen between Friday-Monday, with the exception of week 4.
+There aren't any striking trends across the five weeks that really jump out. Mid-week seems to be relatively less busy (Tues-Thurs) throughout the 5 week period, and for the first three weeks, when there's one busy day on the weekend, the other seems relatively less busy. The two Saturdays in weeks 4 and 5, nothing seems to be happening at all, which is probably the most striking feature of this aggregated activity dataset. The highest levels of activity for each week seem to happen between Friday-Monday, with the exception of week 4.
 
 ```{r}
 accel_df %>% 
