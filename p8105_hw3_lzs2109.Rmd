@@ -174,8 +174,9 @@ There aren't any striking trends across the five weeks that really jump out. Mid
 
 ```{r}
 accel_df %>% 
-  ggplot(aes(x = day_id, y = total_activity, color = day)) +
+  ggplot(aes(x = week, y = total_activity, color = day)) +
   geom_point() +
-  geom_line()
+  geom_path()
+  
 ```
 
