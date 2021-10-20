@@ -16,7 +16,7 @@ library(p8105.datasets)
 data("instacart")
 ```
 
-This instacart dataset includes a bunch of information about orders placed on the online grocery delivery service Instacart. Variables include `r names(instacart)`, which describe unique identifiers used by the app and for products, orders, aisles, departments, and users. In addition, information on how many of the unique items were added to carts, reordered, what day of the week they were ordered, what hour of the day, and how long since the last order of that particular item are inlcuded. Finally, product information including the department and aisle in which they are located are available, as well as the specific product names. This dataset contains a lot of information, with `r nrow(instacart)` observations and `r ncol(instacart)` variables.
+This instacart dataset includes a bunch of information about orders placed on the online grocery delivery service Instacart. Variables include `r names(instacart)`, which describe unique identifiers used by the app and identifiers for products, orders, aisles, departments, and users. In addition, information on how many of the unique items were added to carts, reordered, what day of the week they were ordered, what hour of the day, and how long since the last order of that particular item are inlcuded. Finally, product information including the department and aisle in which they are located are available, as well as the specific product names. This dataset contains a lot of information, with `r nrow(instacart)` observations (over one and a quarter million!) and `r ncol(instacart)` variables.
 
 ```{r}
 instacart %>% 
@@ -28,7 +28,7 @@ instacart %>%
 There are 134 different aisles in the dataset, with over 150,000 items ordered from both the fresh vegetables and fresh fruits aisles. The next most ordered from aisle is the packaged vegetables fruits aisle with almost 78,500 items being ordered from it. The yogurt aisle is the next and 4th most ordered from with over 55,000 items coming from it. The top 5 most ordered from aisles is rounded out with packaged cheese, at one order shy of 41,700 orders.
 
 
-Now, here's a plot showing the number of items ordered in each aisle, with only aisles with over 10,000 items included. We can clearly see the top 5 listed above, with water seltzer sparkling water coming in closely at 6th, followed by milk at 7th, as in our list above.
+Now, here's a plot showing the number of items ordered in each aisle, showing only aisles with over 10,000 items ordered. We can clearly see the top 5 listed above, with water seltzer sparkling water coming in closely at 6th, followed by milk at 7th, as in our list above. Orders from the candy chocolate, dry pasta, oils vinegars, and butter aisles seem to be just past the 10,000 orders mark, making them still quite popular, but rounding out the bottom of the 10k+ list.
 
 ```{r}
 instacart %>% 
@@ -54,9 +54,12 @@ instacart %>%
   mutate(product_rank = min_rank(desc(times_ordered))) %>% 
   filter(product_rank < 4) %>% 
   arrange(aisle, product_rank) %>% 
-  relocate(product_rank, product_name, aisle, times_ordered) %>% 
+  relocate(product_rank, aisle, product_name, times_ordered) %>% 
   knitr::kable()
 ```
+
+Brown sugar seems to be the most commonly ordered item from the baking ingredients aisle, followed by baking soda and organic vanilla extract. I suppose a lot of people are baking cookies and cakes! The dog food care aisle doesn't seem to get a ton of orders on instacart, as the most common items are ordered less than 15 times. Those include "Organix" dog foods and something called Original Dry Dog..? Most likely a type of dry kibble dog food. Finally, the packaged vegetables fruits aisle is quite popular, as we saw above, and gets thousands of orders for organic spinach mostly, followed by organic berries.
+
 
 Next, let's explore what mean hour of the day Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week, with a column for each day of the week and a row for each of the two items.
 
@@ -66,15 +69,18 @@ instacart %>%
   filter(product_name == "Pink Lady Apples" | product_name == "Coffee Ice Cream") %>% 
   group_by(product_name, order_dow) %>% 
   summarize(mean_hour = mean(order_hour_of_day)) %>% 
-  mutate(mean_hour = as.integer(mean_hour),
+  mutate(mean_hour = round(mean_hour),
+         mean_hour = as.integer(mean_hour),
          days_of_week = c("Sunday", "Monday", "Tuesday", 
                           "Wednesday", "Thursday", "Friday", "Saturday")) %>% 
   select(-order_dow) %>% 
   pivot_wider(
     names_from = days_of_week, 
     values_from = mean_hour) %>% 
-  knitr::kable(caption = "Mean Times (24hr) Ordered by Day")
+  knitr::kable(caption = "**Mean Times (24hr) Ordered by Day**")
 ```
+
+This table has the hours rounded off, seeing as how in the original table the numbers were formatted as base ten decimals, which gave a result that didn't look like times. In addition, not rounding off made hours like 11.83 and 11.33 both appear as 11, which also doesn't seem to accurately reflect the average hour of the orders. As such, people seem to be ordering coffee ice cream later in the day, primarily in the afternoons (except Fridays), perhaps for an extra (and sweet) boost of caffeine late in the day. Or maybe they just plan to watch Netflix and eat coffee ice cream when they get home from work in the afternoon. Pink lady apples, on the other hand, seem to be ordered mostly around mid-day.
 
 
 ### **Problem 2**
